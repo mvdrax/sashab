@@ -1,176 +1,57 @@
+// Const
+const loginForm = document.getElementById("form1");
+const emailInput = document.getElementById("email");
+const mdpInput = document.getElementById("rmdp");
+const errorMsg = document.querySelector(".erreur-msg");
+// Let
+let mail = "";
+let mdp = "";
 
-
-const gallery = document.querySelector(".gallery"); 
-const gallerydiv = document.querySelectorAll("gallery > div");
-const btn = document.getElementsByClassName("button");
-const filters = document.querySelector(".filters");
-const btnchanges = document.querySelector(".changes");
-
-
-
-
-const CatAll = document.createElement("button");
-CatAll.setAttribute("categoryId", "0");
-CatAll.setAttribute("class", "button");
-CatAll.innerText = "Tous";
-CatAll.addEventListener("click", () => {
-    gallerydiv.forEach((div) => (div.style.display = "block"));
+// Fetch POST pour Login
+function fetchPost(userLogins) {
+  fetch("http://localhost:5678/api/users/login", {
+    method: "POST",
+    headers: { accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(userLogins),
+  })
+    .then((response) => response.json())
+    .then((res) => {
+      localStorage.token = res.token;
+      if (
+        res.message === "user not found" ||
+        localStorage.token === "undefined"
+      ) {
+        errorMsg.innerText = "Erreur dans l’identifiant ou le mot de passe";
+        console.log(
+          "Connexion Impossible : Erreur Identifiant ou Mot de passe"
+        );
+      } else {
+        localStorage.login = true;
+        window.location.href = "index.html";
+        console.log("Connexion réussie");
+      }
+    })
+    .catch((err) => console.log("Il y a eu une erreur sur le Fetch: " + err));
+}
+// Récupère la valeur dans l'input
+emailInput.addEventListener("input", (e) => {
+  userLogins.email = e.target.value;
+  console.log(e.target.value);
 });
-filters.appendChild(CatAll);
+// Récupère la valeur dans l'input
+mdpInput.addEventListener("input", (e) => {
+  userLogins.password = e.target.value;
+  console.log(e.target.value);
+});
 
-
-
-async function button() {
-    const filtersbtn = await getCategorieApi();
-    filtersbtn.forEach((btn) => {
-        const filtersbtns = document.createElement("button");
-        filtersbtns.setAttribute("categoryId", btn.id);
-        filtersbtns.setAttribute("class" , "button");
-        filtersbtns.innerText = btn.name;
-        filters.appendChild(filtersbtns);
-    });
-}
-
-button();
-
-
-
-
-
-
-/* Appel des catégories et des projets */
-
-async function getCategorieApi() {
-    const req = await fetch("http://localhost:5678/api/categories");
-    const categories = await req.json();
-    return categories;   
-}
-
-async function getWorksApi() {
-    const req = await fetch("http://localhost:5678/api/works");
-    const works = await req.json();
-    console.log(works);
-    return works;
-}
-
-
-/* Affichage des projets */
-
-async function Projets() {
-    const dataProjets = await getWorksApi();
-    dataProjets.forEach((galleryImg) => {
-        const imgProjet = document.createElement("div");
-        const imgSoB = document.createElement("img");
-        const titleso = document.createElement("h3");
-        imgSoB.src = galleryImg.imageUrl;
-        titleso.innerText = galleryImg.title;
-        imgProjet.appendChild(imgSoB);
-        imgProjet.appendChild(titleso);
-        gallery.appendChild(imgProjet);       
-    });
-}
-
-Projets(); 
-
-
-async function filtersforworks() {
-    const workfilters = await getWorksApi();
-    const catfilters = await getCategorieApi();
-    for (let i = 0; i < btn.length; i++) {
-      btn[i].addEventListener("click", () => {
-        console.log(btn[i]);
-        let ctgId = btn[i].getAttribute("categoryId");
-        console.log(ctgId);
-        if (ctgId == 0) {
-          gallery.innerHTML = "";
-          Projets();
-        } else {
-          gallery.innerHTML = "";
-          workfilters.forEach((galleryImg) => {
-            if (galleryImg.categoryId == ctgId) {
-              const imgProjet = document.createElement("div");
-              const imgSoB = document.createElement("img");
-              const titleso = document.createElement("h3");
-              imgSoB.src = galleryImg.imageUrl;
-              titleso.innerText = galleryImg.title;
-              imgProjet.appendChild(imgSoB);
-              imgProjet.appendChild(titleso);
-              gallery.appendChild(imgProjet);
-            }
-          });
-        }
-      });
-    }
-  }
-  
-  filtersforworks();
-
-
-
-/* Mode édition après login */
-
-function editMode() {
-    if (localStorage.login === "true") {
-        btnchanges.style.setProperty("display", "flex");
-        console.log("Vous êtes connecté ! Enjoy !"); 
-    } 
-else {
-    console.log("Vous n'êtes pas connecté ! Identifiez-vous !");
-}
- }
-
-
-editMode();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-window.onload = () => {
-    let filters = document.querySelectorAll(".filters div");
-
-    for(let filter of filters){
-        filter.addEventListener("click", function(){
-            let tag = this.id;
-
-            let images = document.querySelectorAll("img");
-
-            for(let image of images){
-                image.classList.replace("active", "inactive");
-
-                if(tag in image.dataset || tag ==="tous"){
-                    image.classList.replace("inactive", "active")
-                }
-            }
-
-            let figcaptions = document.querySelectorAll(".gallery figcaption");
-
-            for(let figcaption of figcaptions){
-                figcaption.classList.replace("active", "inactive");
-
-                if(tag in figcaption.dataset || tag ==="tous"){
-                    figcaption.classList.replace("inactive", "active")
-                }
-            }
-        });
-    }
-
-
-}
+let userLogins = {
+  //   email: mail,
+  //   password: mdp,
+};
+// Apppel fetch lors du submit
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  console.log(userLogins);
+  fetchPost(userLogins);
+});
 
